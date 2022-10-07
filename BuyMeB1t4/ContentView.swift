@@ -11,9 +11,6 @@ import CoreData
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @State private var showModal = false
-    @State private var name: String = ""
-    @State private var count: String = ""
-    @State private var counttype: String = ""
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Item.name, ascending: true)],
         animation: .default)
@@ -39,7 +36,7 @@ struct ContentView: View {
                     }) {
                         Label("Add Item", systemImage: "plus")
                     }.sheet(isPresented: $showModal) {
-                        ModalView(name: $name, count: $count, counttype: $counttype)
+                        ModalView()
                     }
                 }
             }
@@ -73,9 +70,9 @@ struct ContentView_Previews: PreviewProvider {
 struct ModalView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.presentationMode) var presentationMode
-    @Binding var name: String
-    @Binding var count: String
-    @Binding var counttype: String
+    @State private var name: String = ""
+    @State private var count: String = ""
+    @State private var counttype: String = ""
     var body: some View {
         VStack {
             Text("Введите данные о покупке")
