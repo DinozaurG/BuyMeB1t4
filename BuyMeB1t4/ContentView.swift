@@ -17,37 +17,75 @@ struct ContentView: View {
     private var items: FetchedResults<Item>
 
     var body: some View {
-        NavigationView {
-            List {
-                if items.count != 0 {
+        if items.count != 0 {
+            NavigationView {
+                List {
                     ForEach(items) { item in
                     label: do {
-                        Text("\(item.name!), \(item.count), \(item.counttype!)")
+                        HStack() {
+                            Text("\(item.name!), \(item.count) \(item.counttype!)")
+                            Spacer()
+                            Button(action: {
+                                item.complete = !item.complete
+                            }) {
+                                Image(systemName: item.complete ? "checkmark.square" : "square")
+                            }
+                        }
                     }
+                    }.onDelete(perform: deleteItems)
+                        .swipeActions(edge: .leading) {
+                        Button {
+                            changeItem()
+                        } label: {
+                            Label("Change", systemImage: "rectangle.and.pencil.and.ellipsis")
+                        }
+                        .tint(.yellow)
                     }
-                    .onDelete(perform: deleteItems)
-                } else {
-                    Text("Nothing to do here... Press Plus to add product to buy").multilineTextAlignment(.center)
                 }
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        EditButton()
+                    }
+                    ToolbarItem {
+                        Button(action: {
+                            self.showModal = true
+                        }) {
+                            Label("Add Item", systemImage: "plus")
+                        }.sheet(isPresented: $showModal) {
+                            ModalView()
+                        }
+                    }
+                }
+                //Text("Select an item")
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: {
-                        self.showModal = true
-                    }) {
-                        Label("Add Item", systemImage: "plus")
-                    }.sheet(isPresented: $showModal) {
-                        ModalView()
-                    }
-                }
-            }
-            Text("Select an item")
+        } else {
+            Spacer()
+            Image("placeholder")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .padding(50)
+            Divider()
+            Text("Nothing to do here... Press button at bottom to add product to buy").multilineTextAlignment(.center)
+                .padding(.horizontal, 25)
+            Divider()
+            Spacer()
+            Button(action: {
+                self.showModal = true
+            }) {
+                Label("Add Product", systemImage: "plus")
+            }.sheet(isPresented: $showModal) {
+                ModalView()
+            }.padding(30)
+                .background(LinearGradient(gradient: Gradient(colors: [Color.red, Color.yellow]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                .cornerRadius(40)
+                .foregroundColor(.black)
+            Spacer()
         }
     }
-
+    
+    private func changeItem() {
+        print("Pressed")
+    }
 
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
@@ -69,7 +107,7 @@ struct OvalTextFieldStyle: TextFieldStyle {
     func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
             .padding(15)
-            .background(LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing))
+            .background(LinearGradient(gradient: Gradient(colors: [Color.red, Color.orange]), startPoint: .topLeading, endPoint: .bottomTrailing))
             .cornerRadius(10)
             .shadow(color: .gray, radius: 10)
     }
@@ -87,23 +125,49 @@ struct ModalView: View {
     @State private var name: String = ""
     @State private var count: String = ""
     @State private var counttype: String = ""
+    enum CountType: String, CaseIterable, Identifiable {
+        case Shtuk, Kg, g, L
+        var id: Self { self }
+    }
+    @State private var selectedCountType: CountType = .Shtuk
     var body: some View {
         VStack {
             VStack {
-                Text("Введите данные о покупке")
+                Spacer()
+                Spacer()
+                Text("Write product data")
                 Divider()
                 VStack {
-                    TextField("Наименование", text: $name)
-                    TextField("Количество", text: $count).keyboardType(.numbersAndPunctuation)
-                    TextField("КГ, ШТ?", text: $counttype)
+                    TextField("Name", text: $name)
+                    HStack() {
+                        TextField("Count", text: $count).keyboardType(.numbersAndPunctuation)
+                        Picker("CountType", selection: $selectedCountType) {
+                            Text("Pieces").tag(ModalView.CountType.Shtuk)
+                            Text("Kilograms").tag(ModalView.CountType.Kg)
+                            Text("Grams").tag(ModalView.CountType.g)
+                            Text("Liters").tag(ModalView.CountType.L)
+                        }
+                    }
                 }.foregroundColor(.black)
                 .textFieldStyle(OvalTextFieldStyle())
                 Divider()
-                Button("Сохранить") {
+                Spacer()
+                Button("Save           ") {
                     let newItem = Item(context: viewContext)
                     newItem.name = name
                     newItem.count = Int64(count) ?? 1
+                    switch selectedCountType {
+                    case .Kg:
+                        counttype = "Kg."
+                    case .g:
+                        counttype = "g."
+                    case .L:
+                        counttype = "L."
+                    default:
+                        counttype = "Pieces."
+                    }
                     newItem.counttype = counttype
+                    newItem.complete = false
                     do {
                         try viewContext.save()
                     } catch {
@@ -116,6 +180,9 @@ struct ModalView: View {
                 }.padding(15)
                 .background(LinearGradient(gradient: Gradient(colors: [Color.red, Color.yellow]), startPoint: .topLeading, endPoint: .bottomTrailing))
                 .cornerRadius(40)
+                .foregroundColor(.black)
+                .multilineTextAlignment(.center)
+                Spacer()
             }.padding()
         }
     }
