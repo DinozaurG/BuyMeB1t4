@@ -19,6 +19,7 @@ struct PersistenceController {
             newItem.count = 1
             newItem.counttype = "kg"
             newItem.complete = false
+            newItem.category = "Food"
         }
         do {
             try viewContext.save()

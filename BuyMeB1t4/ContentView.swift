@@ -33,13 +33,13 @@ struct ContentView: View {
                         }
                     }
                     }.onDelete(perform: deleteItems)
-                        .swipeActions(edge: .leading) {
+                    .swipeActions(edge: .leading) {
                         Button {
                             changeItem()
                         } label: {
                             Label("Change", systemImage: "rectangle.and.pencil.and.ellipsis")
                         }
-                        .tint(.yellow)
+                        .tint(.orange)
                     }
                 }
                 .toolbar {
@@ -103,7 +103,7 @@ struct ContentView: View {
     }
 }
 
-struct OvalTextFieldStyle: TextFieldStyle {
+struct DataTextFieldStyle: TextFieldStyle {
     func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
             .padding(15)
@@ -149,7 +149,7 @@ struct ModalView: View {
                         }
                     }
                 }.foregroundColor(.black)
-                .textFieldStyle(OvalTextFieldStyle())
+                .textFieldStyle(DataTextFieldStyle())
                 Divider()
                 Spacer()
                 Button("Save           ") {
