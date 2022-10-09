@@ -15,31 +15,37 @@ struct ContentView: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \Item.name, ascending: true)],
         animation: .default)
     private var items: FetchedResults<Item>
-
+    private var categories = ["Food", "Home chemistry", "Other"]
     var body: some View {
         if items.count != 0 {
             NavigationView {
                 List {
-                    ForEach(items) { item in
-                    label: do {
-                        HStack() {
-                            Text("\(item.name!), \(item.count) \(item.counttype!)")
-                            Spacer()
-                            Button(action: {
-                                item.complete = !item.complete
-                            }) {
-                                Image(systemName: item.complete ? "checkmark.square" : "square")
-                            }
+                    ForEach(0..<3) { i in
+                        Section(header: Text(categories[i]).italic()) {
+                            ForEach(items) { item in
+                                if (categories[i] == item.category) {
+                                label: do {
+                                    HStack() {
+                                        Text("\(item.name!), \(item.count) \(item.counttype!)")
+                                        Spacer()
+                                        Button(action: {
+                                            item.complete = !item.complete
+                                        }) {
+                                            Image(systemName: item.complete ? "checkmark.square" : "square")
+                                        }
+                                    }
+                                }
+                                }
+                            }.onDelete(perform: deleteItems)
+                                .swipeActions(edge: .leading) {
+                                    Button {
+                                        changeItem()
+                                    } label: {
+                                        Label("Change", systemImage: "rectangle.and.pencil.and.ellipsis")
+                                    }
+                                    .tint(.orange)
+                                }
                         }
-                    }
-                    }.onDelete(perform: deleteItems)
-                    .swipeActions(edge: .leading) {
-                        Button {
-                            changeItem()
-                        } label: {
-                            Label("Change", systemImage: "rectangle.and.pencil.and.ellipsis")
-                        }
-                        .tint(.orange)
                     }
                 }
                 .toolbar {
@@ -125,11 +131,19 @@ struct ModalView: View {
     @State private var name: String = ""
     @State private var count: String = ""
     @State private var counttype: String = ""
+    @State private var category: String = ""
+    
+    enum Category: String, CaseIterable, Identifiable {
+        case food, hc, other
+        var id: Self { self }
+    }
+
     enum CountType: String, CaseIterable, Identifiable {
         case Shtuk, Kg, g, L
         var id: Self { self }
     }
     @State private var selectedCountType: CountType = .Shtuk
+    @State private var selectedCategory: Category = .food
     var body: some View {
         VStack {
             VStack {
@@ -138,6 +152,11 @@ struct ModalView: View {
                 Text("Write product data")
                 Divider()
                 VStack {
+                    Picker("Category", selection: $selectedCategory) {
+                        Text("Food").tag(ModalView.Category.food)
+                        Text("Home chemistry").tag(ModalView.Category.hc)
+                        Text("Other").tag(ModalView.Category.other)
+                    }.pickerStyle(SegmentedPickerStyle())
                     TextField("Name", text: $name)
                     HStack() {
                         TextField("Count", text: $count).keyboardType(.numbersAndPunctuation)
@@ -167,6 +186,15 @@ struct ModalView: View {
                         counttype = "Pieces."
                     }
                     newItem.counttype = counttype
+                    switch selectedCategory{
+                    case .hc:
+                        category = "Home chemistry"
+                    case .other:
+                        category = "Other"
+                    default:
+                        category = "Food"
+                    }
+                    newItem.category = category
                     newItem.complete = false
                     do {
                         try viewContext.save()
