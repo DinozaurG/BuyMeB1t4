@@ -30,6 +30,13 @@ struct ContentView: View {
                                         Spacer()
                                         Button(action: {
                                             item.complete = !item.complete
+                                            do {
+                                                try
+                                                viewContext.save()
+                                            } catch {
+                                                let nsError = error as NSError
+                                                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                                            }
                                         }) {
                                             Image(systemName: item.complete ? "checkmark.square" : "square")
                                         }
@@ -88,6 +95,7 @@ struct ContentView: View {
             Spacer()
         }
     }
+    
     
     private func changeItem() {
         print("Pressed")
