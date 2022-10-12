@@ -56,9 +56,9 @@ struct ContentView: View {
                     }
                 }
                 .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                    /*ToolbarItem(placement: .navigationBarTrailing) {
                         EditButton()
-                    }
+                    }*/
                     ToolbarItem {
                         Button(action: {
                             self.showModal = true
@@ -167,7 +167,7 @@ struct ModalView: View {
                     }.pickerStyle(SegmentedPickerStyle())
                     TextField("Name", text: $name)
                     HStack() {
-                        TextField("Count", text: $count).keyboardType(.numbersAndPunctuation)
+                        TextField("Count", text: $count).keyboardType(.numberPad)
                         Picker("CountType", selection: $selectedCountType) {
                             Text("Pieces").tag(ModalView.CountType.Shtuk)
                             Text("Kilograms").tag(ModalView.CountType.Kg)
